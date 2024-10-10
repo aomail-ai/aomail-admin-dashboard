@@ -7,6 +7,9 @@ RUN npm install
 
 COPY . .
 
+ARG VITE_BACKEND_SUBDOMAIN_ENV
+ENV VITE_BACKEND_SUBDOMAIN_ENV=${VITE_BACKEND_SUBDOMAIN_ENV}
+
 RUN npm run build
 
 COPY static/ /dashboard/dist/static/
