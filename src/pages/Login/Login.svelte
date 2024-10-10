@@ -12,6 +12,7 @@
         if (token) {
             hasToken = true;
         }
+        document.addEventListener("keydown", handleKeyDown);
     });
 
     const handleLogin = async () => {
@@ -40,6 +41,25 @@
 
     const goToDashboard = () => {
         goto("/dashboard");
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Enter") {
+            handleLogin();
+        } else if (event.key === "Tab") {
+            event.preventDefault();
+
+            const target = document.activeElement as HTMLElement;
+            if (!username) {
+                (document.getElementById("username") as HTMLElement).focus();
+            } else if (!password) {
+                (document.getElementById("password") as HTMLElement).focus();
+            } else if (target.id === "username") {
+                (document.getElementById("password") as HTMLElement).focus();
+            } else {
+                (document.getElementById("username") as HTMLElement).focus();
+            }
+        }
     };
 </script>
 
