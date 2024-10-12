@@ -98,6 +98,7 @@
     const userId = writable("");
     const username = writable("");
     const emailAddress = writable("");
+    const errorMessage = writable("");
 
     const fetchStatistics = async () => {
         const emailsStatsParam: Record<string, any> = {};
@@ -121,8 +122,10 @@
         });
 
         if (!result.success) {
-            console.error("Error fetching statistics: " + result.error);
+            errorMessage.set(result.error as string);
+            data.set(null);
         } else {
+            errorMessage.set("");
             data.set(result.data as UserStatistics);
         }
     };
@@ -169,6 +172,12 @@
     <Header />
     <div class="p-6 space-y-6">
         <h1 class="text-3xl font-semibold text-gray-800">User Statistics Dashboard</h1>
+
+        {#if $errorMessage}
+            <div class="text-red-600 font-semibold mt-4">
+                {#if $errorMessage}{$errorMessage}{/if}
+            </div>
+        {/if}
 
         <!-- User Inputs Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
