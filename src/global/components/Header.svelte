@@ -1,6 +1,9 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
+
     const logout = () => {
         localStorage.clear();
+        goto("/");
     };
 </script>
 
