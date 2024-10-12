@@ -276,35 +276,79 @@
         {#if $data}
             <ul>
                 {#each Object.keys($data.emailsStats) as key}
-                    <li>
-                        <strong>{getTranslation(key)}:</strong>
-                        <ul class="pl-4 list-disc">
-                            <li>Since:</li>
-                            <ul class="pl-4">
-                                {#each Object.keys($data.emailsStats[key].since) as sinceKey}
-                                    <li>
-                                        {getTranslation(sinceKey)}: {getSinceValue(key, sinceKey)}
-                                    </li>
-                                {/each}
-                            </ul>
-
-                            <li>Periods:</li>
-                            <ul class="pl-4">
-                                {#each Object.keys($data.emailsStats[key].periods) as periodKey}
-                                    <li>
-                                        {getTranslation(periodKey)}:
-                                        <ul class="pl-4 list-disc">
-                                            <li>Avg: {$data.emailsStats[key].periods[periodKey].avg}</li>
-                                            <li>Min: {$data.emailsStats[key].periods[periodKey].min}</li>
-                                            <li>Max: {$data.emailsStats[key].periods[periodKey].max}</li>
+                    {#if Object.keys($data.emailsStats[key].since).length > 0 || Object.keys($data.emailsStats[key].periods).length > 0}
+                        <li>
+                            <strong>{getTranslation(key)}:</strong>
+                            <ul class="pl-4 list-disc">
+                                <!-- Since Section (Displayed only if since options are selected) -->
+                                {#if $selectedSinceOptions.length > 0}
+                                    {#if Object.keys($data.emailsStats[key].since).length > 0}
+                                        <li>Since:</li>
+                                        <ul class="pl-4">
+                                            {#each Object.keys($data.emailsStats[key].since) as sinceKey}
+                                                {#if $selectedSinceOptions.includes(sinceKey)}
+                                                    <li>
+                                                        {getTranslation(sinceKey)}: {getSinceValue(key, sinceKey)}
+                                                    </li>
+                                                {/if}
+                                            {/each}
                                         </ul>
-                                    </li>
-                                {/each}
+                                    {/if}
+                                {/if}
+
+                                <!-- Periods Section (Displayed only if period options are selected) -->
+                                {#if $selectedPeriodOptions.length > 0}
+                                    <li>Periods:</li>
+                                    <ul class="pl-4">
+                                        {#each Object.keys($data.emailsStats[key].periods) as periodKey}
+                                            {#if $selectedPeriodOptions.includes(periodKey)}
+                                                <li>
+                                                    {getTranslation(periodKey)}:
+                                                    <ul class="pl-4 list-disc">
+                                                        <li>Avg: {$data.emailsStats[key].periods[periodKey].avg}</li>
+                                                        <li>Min: {$data.emailsStats[key].periods[periodKey].min}</li>
+                                                        <li>Max: {$data.emailsStats[key].periods[periodKey].max}</li>
+                                                    </ul>
+                                                </li>
+                                            {/if}
+                                        {/each}
+                                    </ul>
+                                {/if}
                             </ul>
-                        </ul>
-                    </li>
+                        </li>
+                    {/if}
                 {/each}
             </ul>
+
+            <!-- Token Usage Display Section with Icons -->
+            <div class="mt-8 p-4 bg-gray-100 rounded-lg shadow-lg">
+                <h3 class="text-xl font-semibold mb-4">Token Usage</h3>
+                <div class="flex items-center space-x-4">
+                    <!-- Input Tokens with Icon -->
+                    <div class="flex items-center">
+                        <span>
+                            <strong>Input Tokens:</strong>
+                            {$data.nbTokensInput}
+                        </span>
+                    </div>
+
+                    <!-- Output Tokens with Icon -->
+                    <div class="flex items-center">
+                        <span>
+                            <strong>Output Tokens:</strong>
+                            {$data.nbTokensOutput}
+                        </span>
+                    </div>
+
+                    <!-- Estimated Cost with Icon -->
+                    <div class="flex items-center">
+                        <span>
+                            <strong>Total Cost:</strong>
+                            ${$data.estimatedCostUser.total.toFixed(2)}
+                        </span>
+                    </div>
+                </div>
+            </div>
         {:else}
             <p>No data available.</p>
         {/if}
