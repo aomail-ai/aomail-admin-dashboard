@@ -29,6 +29,12 @@
             >
                 Search User Info
             </a>
+            <a
+                href="/update-user-info"
+                class="text-sm font-semibold leading-6 text-gray-900 rounded-md hover:bg-gray-100 p-2"
+            >
+                Update User Info
+            </a>
         </div>
         <button
             class="flex items-center justify-center p-2 text-red-600 hover:text-red-800 absolute right-6"
