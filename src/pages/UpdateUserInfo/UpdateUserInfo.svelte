@@ -5,9 +5,46 @@
     import { isAdminAuthenticated } from "../../global/security";
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
+    import NotificationTimer from "../../global/components/NotificationTimer.svelte";
+    import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
 
-    const errorMessage = writable("");
-    const successMessage = writable("");
+    const showNotification = writable(false);
+    const notificationTitle = writable("");
+    const notificationMessage = writable("");
+    const backgroundColor = writable("");
+    let timerId: NodeJS.Timeout | null = null;
+
+    function dismissPopup() {
+        showNotification.set(false);
+        if (timerId) {
+            clearTimeout(timerId);
+            timerId = null;
+        }
+    }
+
+    function displayPopup(type: "success" | "error", title: string, message: string) {
+        if (type === "error") {
+            displayErrorPopup(
+                showNotification,
+                notificationTitle,
+                notificationMessage,
+                backgroundColor,
+                title,
+                message,
+            );
+        } else {
+            displaySuccessPopup(
+                showNotification,
+                notificationTitle,
+                notificationMessage,
+                backgroundColor,
+                title,
+                message,
+            );
+        }
+        timerId = setTimeout(dismissPopup, 4000);
+    }
+
     const isLoading = writable(true);
     const userId = writable("");
     const username = writable("");
@@ -39,11 +76,12 @@
     });
 
     async function handleUpdate() {
-        errorMessage.set("");
-        successMessage.set("");
-
         if (!$userId && !$username && !$emailAddress) {
-            errorMessage.set("Please provide at least one identifier (User ID, Username, or Email Address).");
+            displayPopup(
+                "error",
+                "Missing Identifier",
+                "Please provide at least one identifier (User ID, Username, or Email Address).",
+            );
             return;
         }
 
@@ -57,31 +95,27 @@
         const result = await putData("admin/update_user_info/", requestBody);
 
         if (!result.success) {
-            errorMessage.set(result.error as string);
+            displayPopup("error", "Update Error", result.error as string);
         } else {
-            successMessage.set("User information updated successfully");
+            displayPopup("success", "Success", "User information updated successfully!");
         }
     }
 </script>
 
+{#if $showNotification}
+    <NotificationTimer
+        showNotification={$showNotification}
+        notificationTitle={$notificationTitle}
+        notificationMessage={$notificationMessage}
+        backgroundColor={$backgroundColor}
+    />
+{/if}
 {#if $isLoading}
     <div class="text-center text-gray-600 mt-10">Loading...</div>
 {:else}
     <Header />
     <div class="p-6 space-y-6">
         <h1 class="text-3xl font-semibold text-gray-800">Update User Subscription</h1>
-
-        {#if $errorMessage}
-            <div class="text-red-600 font-semibold mt-4">
-                {$errorMessage}
-            </div>
-        {/if}
-
-        {#if $successMessage}
-            <div class="text-green-600 font-semibold mt-4">
-                {$successMessage}
-            </div>
-        {/if}
 
         <!-- User Inputs Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

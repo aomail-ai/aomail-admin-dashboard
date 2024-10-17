@@ -5,6 +5,8 @@
     import { isAdminAuthenticated } from "../../global/security";
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
+    import NotificationTimer from "../../global/components/NotificationTimer.svelte";
+    import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
 
     interface EmailStats {
         since: {
@@ -26,6 +28,12 @@
     interface UserStatistics {
         emailsStats: {
             [key: string]: EmailStats;
+        };
+        plan: {
+            name: string;
+            isTrial: boolean;
+            isActive: boolean;
+            expiresThe: Date;
         };
         nbTokensInput: number;
         nbTokensOutput: number;
@@ -84,6 +92,43 @@
         "nbMeeting",
     ];
 
+    const showNotification = writable(false);
+    const notificationTitle = writable("");
+    const notificationMessage = writable("");
+    const backgroundColor = writable("");
+    let timerId: NodeJS.Timeout | null = null;
+
+    function dismissPopup() {
+        showNotification.set(false);
+        if (timerId) {
+            clearTimeout(timerId);
+            timerId = null;
+        }
+    }
+
+    function displayPopup(type: "success" | "error", title: string, message: string) {
+        if (type === "error") {
+            displayErrorPopup(
+                showNotification,
+                notificationTitle,
+                notificationMessage,
+                backgroundColor,
+                title,
+                message,
+            );
+        } else {
+            displaySuccessPopup(
+                showNotification,
+                notificationTitle,
+                notificationMessage,
+                backgroundColor,
+                title,
+                message,
+            );
+        }
+        timerId = setTimeout(dismissPopup, 4000);
+    }
+
     const isLoading = writable(true);
 
     type MetricKey = keyof typeof metricLabelTranslations;
@@ -98,7 +143,6 @@
     const userId = writable("");
     const username = writable("");
     const emailAddress = writable("");
-    const errorMessage = writable("");
 
     const fetchStatistics = async () => {
         const emailsStatsParam: Record<string, any> = {};
@@ -122,10 +166,10 @@
         });
 
         if (!result.success) {
-            errorMessage.set(result.error as string);
+            displayPopup("error", "Failed to fetch user informations", result.error as string);
             data.set(null);
         } else {
-            errorMessage.set("");
+            dismissPopup();
             data.set(result.data as UserStatistics);
         }
     };
@@ -166,18 +210,20 @@
     }
 </script>
 
+{#if $showNotification}
+    <NotificationTimer
+        showNotification={$showNotification}
+        notificationTitle={$notificationTitle}
+        notificationMessage={$notificationMessage}
+        backgroundColor={$backgroundColor}
+    />
+{/if}
 {#if $isLoading}
     <div class="text-center text-gray-600 mt-10">Loading...</div>
 {:else}
     <Header />
     <div class="p-6 space-y-6">
         <h1 class="text-3xl font-semibold text-gray-800">User Statistics Dashboard</h1>
-
-        {#if $errorMessage}
-            <div class="text-red-600 font-semibold mt-4">
-                {#if $errorMessage}{$errorMessage}{/if}
-            </div>
-        {/if}
 
         <!-- User Inputs Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -289,23 +335,21 @@
                         <li>
                             <strong>{getTranslation(key)}:</strong>
                             <ul class="pl-4 list-disc">
-                                <!-- Since Section (Displayed only if since options are selected) -->
+                                <!-- Since Section -->
                                 {#if $selectedSinceOptions.length > 0}
                                     {#if Object.keys($data.emailsStats[key].since).length > 0}
                                         <li>Since:</li>
                                         <ul class="pl-4">
                                             {#each Object.keys($data.emailsStats[key].since) as sinceKey}
                                                 {#if $selectedSinceOptions.includes(sinceKey)}
-                                                    <li>
-                                                        {getTranslation(sinceKey)}: {getSinceValue(key, sinceKey)}
-                                                    </li>
+                                                    <li>{getTranslation(sinceKey)}: {getSinceValue(key, sinceKey)}</li>
                                                 {/if}
                                             {/each}
                                         </ul>
                                     {/if}
                                 {/if}
 
-                                <!-- Periods Section (Displayed only if period options are selected) -->
+                                <!-- Periods Section -->
                                 {#if $selectedPeriodOptions.length > 0}
                                     <li>Periods:</li>
                                     <ul class="pl-4">
@@ -329,33 +373,47 @@
                 {/each}
             </ul>
 
-            <!-- Token Usage Display Section with Icons -->
+            <!-- Token Usage Display Section -->
             <div class="mt-8 p-4 bg-gray-100 rounded-lg shadow-lg">
                 <h3 class="text-xl font-semibold mb-4">Token Usage</h3>
                 <div class="flex items-center space-x-4">
-                    <!-- Input Tokens with Icon -->
                     <div class="flex items-center">
-                        <span>
-                            <strong>Input Tokens:</strong>
-                            {$data.nbTokensInput}
-                        </span>
+                        <strong>Input Tokens:</strong>
+                        {$data.nbTokensInput}
                     </div>
+                    <div class="flex items-center">
+                        <strong>Output Tokens:</strong>
+                        {$data.nbTokensOutput}
+                    </div>
+                    <div class="flex items-center">
+                        <strong>Total Cost:</strong>
+                        ${$data.estimatedCostUser.total.toFixed(2)}
+                    </div>
+                </div>
+            </div>
 
-                    <!-- Output Tokens with Icon -->
-                    <div class="flex items-center">
-                        <span>
-                            <strong>Output Tokens:</strong>
-                            {$data.nbTokensOutput}
-                        </span>
+            <!-- Plan Information Display Section -->
+            <div class="mt-8 p-4 bg-gray-100 rounded-lg shadow-lg">
+                <h3 class="text-xl font-semibold mb-4">Plan Information</h3>
+                <div class="space-y-2">
+                    <div>
+                        <strong>Plan Name:</strong>
+                        {$data.plan.name}
                     </div>
-
-                    <!-- Estimated Cost with Icon -->
-                    <div class="flex items-center">
-                        <span>
-                            <strong>Total Cost:</strong>
-                            ${$data.estimatedCostUser.total.toFixed(2)}
-                        </span>
+                    <div>
+                        <strong>Trial Status:</strong>
+                        {$data.plan.isTrial ? "Yes" : "No"}
                     </div>
+                    <div>
+                        <strong>Active Status:</strong>
+                        {$data.plan.isActive ? "Active" : "Inactive"}
+                    </div>
+                    {#if $data.plan.expiresThe}
+                        <div>
+                            <strong>Expires On:</strong>
+                            {$data.plan.expiresThe.toLocaleDateString()}
+                        </div>
+                    {/if}
                 </div>
             </div>
         {:else}

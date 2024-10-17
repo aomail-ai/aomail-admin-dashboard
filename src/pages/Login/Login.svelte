@@ -3,12 +3,51 @@
     import { API_BASE_URL } from "../../global/const";
     import { onMount } from "svelte";
     import { isAdminAuthenticated } from "../../global/security";
+    import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
+    import NotificationTimer from "../../global/components/NotificationTimer.svelte";
+    import { writable } from "svelte/store";
 
     let username = "";
     let password = "";
     let tokenValid = false;
     let showPassword = false;
-    let errorMessage = "";
+
+    const showNotification = writable(false);
+    const notificationTitle = writable("");
+    const notificationMessage = writable("");
+    const backgroundColor = writable("");
+    let timerId: NodeJS.Timeout | null = null;
+
+    function dismissPopup() {
+        showNotification.set(false);
+        if (timerId) {
+            clearTimeout(timerId);
+            timerId = null;
+        }
+    }
+
+    function displayPopup(type: "success" | "error", title: string, message: string) {
+        if (type === "error") {
+            displayErrorPopup(
+                showNotification,
+                notificationTitle,
+                notificationMessage,
+                backgroundColor,
+                title,
+                message,
+            );
+        } else {
+            displaySuccessPopup(
+                showNotification,
+                notificationTitle,
+                notificationMessage,
+                backgroundColor,
+                title,
+                message,
+            );
+        }
+        timerId = setTimeout(dismissPopup, 4000);
+    }
 
     onMount(async () => {
         const token = localStorage.getItem("adminAccessToken");
@@ -26,6 +65,15 @@
     };
 
     const handleLogin = async () => {
+        if (!username.trim()) {
+            displayPopup("error", "Input Error", "Username is required.");
+            return;
+        }
+
+        if (!password.trim()) {
+            displayPopup("error", "Input Error", "Password is required.");
+            return;
+        }
         try {
             const response = await fetch(`${API_BASE_URL}admin/login/`, {
                 method: "POST",
@@ -36,19 +84,15 @@
             const data = await response.json();
 
             if (!response.ok) {
-                errorMessage = data.error as string;
+                displayPopup("error", "Login Error", data.error);
+                return;
             }
 
             localStorage.setItem("adminAccessToken", data.accessToken);
-            errorMessage = "";
 
             goto("/dashboard");
         } catch (error) {
-            if (error instanceof Error) {
-                errorMessage = error.message;
-            } else {
-                errorMessage = "An unknown error occurred";
-            }
+            displayPopup("error", "Login Error", "An unknown error occurred");
         }
     };
 
@@ -61,7 +105,6 @@
             handleLogin();
         } else if (event.key === "Tab") {
             event.preventDefault();
-
             const target = document.activeElement as HTMLElement;
             if (!username) {
                 (document.getElementById("username") as HTMLElement).focus();
@@ -76,7 +119,15 @@
     };
 </script>
 
-<div class="bg-black min-h-screen flex flex-col justify-center py-20 sm:py-32">
+{#if $showNotification}
+    <NotificationTimer
+        showNotification={$showNotification}
+        notificationTitle={$notificationTitle}
+        notificationMessage={$notificationMessage}
+        backgroundColor={$backgroundColor}
+    />
+{/if}
+<div class="bg-gray-800 min-h-screen flex flex-col justify-center py-20 sm:py-32">
     <div class="px-4 sm:px-6 lg:px-8 flex-grow">
         <div class="mx-auto max-w-md px-6 sm:max-w-3xl lg:max-w-7xl lg:px-8">
             <div class="relative overflow-hidden rounded-2xl px-6 py-10 shadow-none sm:px-12 sm:py-20">
@@ -100,9 +151,7 @@
                             placeholder="Enter your username"
                             class="mt-2 w-full rounded-md border border-gray-300 p-2"
                         />
-
                         <label for="password" class="block mt-4 text-white">Password:</label>
-
                         <div class="relative items-stretch mt-2 flex">
                             {#if showPassword}
                                 <input
@@ -126,7 +175,6 @@
                                 class="p-2 bg-gray-50 rounded-r-md ring-l-none ring-1 ring-inset ring-gray-300"
                             >
                                 {#if !showPassword}
-                                    <!-- Show Password Icon -->
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
@@ -147,7 +195,6 @@
                                         />
                                     </svg>
                                 {:else}
-                                    <!-- Hide Password Icon -->
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
@@ -165,12 +212,6 @@
                                 {/if}
                             </button>
                         </div>
-
-                        <!-- Error Message -->
-                        {#if errorMessage}
-                            <p class="text-red-500 mt-2 text-sm">{errorMessage}</p>
-                        {/if}
-
                         <button
                             on:click={handleLogin}
                             class="mt-4 w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
@@ -182,7 +223,6 @@
             </div>
         </div>
     </div>
-
     {#if tokenValid}
         <button
             on:click={goToDashboard}

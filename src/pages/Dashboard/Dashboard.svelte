@@ -7,6 +7,8 @@
     import { FontAwesomeIcon } from "@fortawesome/svelte-fontawesome";
     import { faEnvelope, faUsers, faUserShield, faDollarSign, faCoins } from "@fortawesome/free-solid-svg-icons";
     import Header from "../../global/components/Header.svelte";
+    import NotificationTimer from "../../global/components/NotificationTimer.svelte";
+    import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
 
     interface DashboardData {
         emailCount: number;
@@ -32,25 +34,64 @@
         averageTotalCostPerUser: number;
     }
 
+    const showNotification = writable(false);
+    const notificationTitle = writable("");
+    const notificationMessage = writable("");
+    const backgroundColor = writable("");
+    let timerId: NodeJS.Timeout | null = null;
+
+    function dismissPopup() {
+        showNotification.set(false);
+        if (timerId) {
+            clearTimeout(timerId);
+            timerId = null;
+        }
+    }
+
+    function displayPopup(type: "success" | "error", title: string, message: string) {
+        if (type === "error") {
+            displayErrorPopup(
+                showNotification,
+                notificationTitle,
+                notificationMessage,
+                backgroundColor,
+                title,
+                message,
+            );
+        } else {
+            displaySuccessPopup(
+                showNotification,
+                notificationTitle,
+                notificationMessage,
+                backgroundColor,
+                title,
+                message,
+            );
+        }
+        timerId = setTimeout(dismissPopup, 4000);
+    }
+
     const dashboardData = writable<DashboardData | null>(null);
     const costsData = writable<CostsData | null>(null);
     const isLoading = writable(true);
 
     const fetchDashboardData = async () => {
         const result = await getData("admin/get_dashboard_data");
-        if (result.success) {
-            dashboardData.set(result.data);
+
+        if (!result.success) {
+            displayPopup("error", "Failed to fetch dashboard data", result.error as string);
         } else {
-            goto("/");
+            dashboardData.set(result.data);
         }
     };
 
     const fetchCostsInfo = async () => {
         const result = await getData("admin/get_costs_info");
-        if (result.success) {
-            costsData.set(result.data.costs);
+
+        if (!result.success) {
+            displayPopup("error", "Failed to fetch costs data", result.error as string);
         } else {
-            goto("/");
+            costsData.set(result.data.costs);
         }
     };
 
@@ -66,6 +107,14 @@
     });
 </script>
 
+{#if $showNotification}
+    <NotificationTimer
+        showNotification={$showNotification}
+        notificationTitle={$notificationTitle}
+        notificationMessage={$notificationMessage}
+        backgroundColor={$backgroundColor}
+    />
+{/if}
 {#if $isLoading}
     <div class="text-center text-gray-600 mt-10">Loading...</div>
 {:else}

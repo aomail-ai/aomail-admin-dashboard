@@ -5,6 +5,45 @@
     import { isAdminAuthenticated } from "../../global/security";
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
+    import NotificationTimer from "../../global/components/NotificationTimer.svelte";
+    import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
+
+    const showNotification = writable(false);
+    const notificationTitle = writable("");
+    const notificationMessage = writable("");
+    const backgroundColor = writable("");
+    let timerId: NodeJS.Timeout | null = null;
+
+    function dismissPopup() {
+        showNotification.set(false);
+        if (timerId) {
+            clearTimeout(timerId);
+            timerId = null;
+        }
+    }
+
+    function displayPopup(type: "success" | "error", title: string, message: string) {
+        if (type === "error") {
+            displayErrorPopup(
+                showNotification,
+                notificationTitle,
+                notificationMessage,
+                backgroundColor,
+                title,
+                message,
+            );
+        } else {
+            displaySuccessPopup(
+                showNotification,
+                notificationTitle,
+                notificationMessage,
+                backgroundColor,
+                title,
+                message,
+            );
+        }
+        timerId = setTimeout(dismissPopup, 4000);
+    }
 
     const newAdminUsername = writable("");
     const newAdminPassword = writable("");
@@ -12,9 +51,6 @@
     const currentAdminPassword = writable("");
     const adminIdToDelete = writable("");
     const adminUsernameToDelete = writable("");
-
-    const errorMessage = writable("");
-    const successMessage = writable("");
     const isLoading = writable(true);
 
     const addNewAdmin = async () => {
@@ -22,25 +58,21 @@
         const password = $newAdminPassword;
 
         if (username.length < 4) {
-            errorMessage.set("Username must be at least 4 characters long.");
-            successMessage.set("");
+            displayPopup("error", "Invalid Username", "Username must be at least 4 characters long.");
             return;
         }
         if (!(8 <= password.length && password.length <= 50)) {
-            errorMessage.set("Password must be between 8 and 50 characters long.");
-            successMessage.set("");
+            displayPopup("error", "Invalid Password", "Password must be between 8 and 50 characters long.");
             return;
         }
 
         const result = await postData("admin/create_superuser", { username, password });
         if (result.success) {
-            successMessage.set("New admin created successfully!");
-            errorMessage.set("");
+            displayPopup("success", "Success", "New admin created successfully!");
             newAdminUsername.set("");
             newAdminPassword.set("");
         } else {
-            errorMessage.set(result.error || "Failed to create new admin.");
-            successMessage.set("");
+            displayPopup("error", "Creation Error", result.error as string);
         }
     };
 
@@ -49,25 +81,21 @@
         const password = $currentAdminPassword;
 
         if (username.length < 4) {
-            errorMessage.set("Username must be at least 4 characters long.");
-            successMessage.set("");
+            displayPopup("error", "Invalid Username", "Username must be at least 4 characters long.");
             return;
         }
         if (!(8 <= password.length && password.length <= 50)) {
-            errorMessage.set("Password must be between 8 and 50 characters long.");
-            successMessage.set("");
+            displayPopup("error", "Invalid Password", "Password must be between 8 and 50 characters long.");
             return;
         }
 
         const result = await putData("admin/update_admin_data/", { username, password });
         if (result.success) {
-            successMessage.set("Admin details updated successfully!");
-            errorMessage.set("");
+            displayPopup("success", "Success", "Admin details updated successfully!");
             currentAdminUsername.set("");
             currentAdminPassword.set("");
         } else {
-            errorMessage.set(result.error || "Failed to update admin details.");
-            successMessage.set("");
+            displayPopup("error", "Update Error", result.error as string);
         }
     };
 
@@ -76,20 +104,17 @@
         const adminUsername = $adminUsernameToDelete;
 
         if (!adminId && !adminUsername) {
-            errorMessage.set("Please provide either an Admin ID or Username.");
-            successMessage.set("");
+            displayPopup("error", "Missing Information", "Please provide either an Admin ID or Username.");
             return;
         }
 
         const result = await deleteData("admin/delete_admin", { id: adminId, username: adminUsername });
         if (result.success) {
-            successMessage.set("Admin deleted successfully!");
-            errorMessage.set("");
+            displayPopup("success", "Success", "Admin deleted successfully!");
             adminIdToDelete.set("");
             adminUsernameToDelete.set("");
         } else {
-            errorMessage.set(result.error || "Failed to delete admin.");
-            successMessage.set("");
+            displayPopup("error", "Deletion Error", result.error as string);
         }
     };
 
@@ -103,24 +128,20 @@
     });
 </script>
 
+{#if $showNotification}
+    <NotificationTimer
+        showNotification={$showNotification}
+        notificationTitle={$notificationTitle}
+        notificationMessage={$notificationMessage}
+        backgroundColor={$backgroundColor}
+    />
+{/if}
 {#if $isLoading}
     <div class="text-center text-gray-600 mt-10">Loading...</div>
 {:else}
     <Header />
     <div class="bg-gray-100 min-h-screen p-8">
         <h1 class="text-3xl font-bold text-center mb-6">Admin Management</h1>
-
-        <!-- Messages for errors and success -->
-        {#if $errorMessage}
-            <div class="mt-4 bg-red-100 text-red-600 text-center p-3 rounded-md">
-                <p>{$errorMessage}</p>
-            </div>
-        {/if}
-        {#if $successMessage}
-            <div class="mt-4 bg-green-100 text-green-600 text-center p-3 rounded-md">
-                <p>{$successMessage}</p>
-            </div>
-        {/if}
 
         <!-- Admin Management Grid -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
