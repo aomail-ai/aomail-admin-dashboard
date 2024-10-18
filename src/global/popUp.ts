@@ -1,14 +1,12 @@
-import { POP_UP_ERROR_COLOR, POP_UP_SUCCESS_COLOR } from "./const";
-
 export function displayErrorPopup(
     showNotification: { set: (value: boolean) => void },
     notificationTitle: { set: (value: string) => void },
     notificationMessage: { set: (value: string) => void },
-    backgroundColor: { set: (value: string) => void },
+    type: { set: (value: string) => void },
     title: string,
     message: string,
 ) {
-    backgroundColor.set(POP_UP_ERROR_COLOR);
+    type.set("error");
     notificationTitle.set(title);
     notificationMessage.set(message);
     showNotification.set(true);
@@ -22,11 +20,11 @@ export function displaySuccessPopup(
     showNotification: { set: (value: boolean) => void },
     notificationTitle: { set: (value: string) => void },
     notificationMessage: { set: (value: string) => void },
-    backgroundColor: { set: (value: string) => void },
+    type: { set: (value: string) => void },
     title: string,
     message: string,
 ) {
-    backgroundColor.set(POP_UP_SUCCESS_COLOR);
+    type.set("success");
     notificationTitle.set(title);
     notificationMessage.set(message);
     showNotification.set(true);

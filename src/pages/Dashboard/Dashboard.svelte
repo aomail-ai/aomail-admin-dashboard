@@ -37,7 +37,7 @@
     const showNotification = writable(false);
     const notificationTitle = writable("");
     const notificationMessage = writable("");
-    const backgroundColor = writable("");
+    const notificationType = writable("");
     let timerId: NodeJS.Timeout | null = null;
 
     function dismissPopup() {
@@ -54,7 +54,7 @@
                 showNotification,
                 notificationTitle,
                 notificationMessage,
-                backgroundColor,
+                notificationType,
                 title,
                 message,
             );
@@ -63,7 +63,7 @@
                 showNotification,
                 notificationTitle,
                 notificationMessage,
-                backgroundColor,
+                notificationType,
                 title,
                 message,
             );
@@ -112,7 +112,7 @@
         showNotification={$showNotification}
         notificationTitle={$notificationTitle}
         notificationMessage={$notificationMessage}
-        backgroundColor={$backgroundColor}
+        notificationType={$notificationType}
     />
 {/if}
 {#if $isLoading}

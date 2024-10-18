@@ -5,10 +5,20 @@
     export let showNotification: boolean;
     export let notificationTitle: string;
     export let notificationMessage: string;
-    export let backgroundColor: string;
+    export let notificationType: string;
 
     let showNotificationInternal: boolean = false;
     let timerId: NodeJS.Timeout | null = null;
+
+    let notificationClass: string;
+
+    $: {
+        if (notificationType === "success") {
+            notificationClass = `pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-green-200/[.89] border border-green-400`;
+        } else {
+            notificationClass = `pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-red-200/[.89] border border-red-400`;
+        }
+    }
 
     const showPopupWithTimer = () => {
         showNotificationInternal = true;
@@ -43,10 +53,7 @@
 >
     <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
         {#if showNotificationInternal}
-            <div
-                class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 {backgroundColor}"
-                transition:fade={{ duration: 300 }}
-            >
+            <div class={notificationClass} transition:fade={{ duration: 300 }}>
                 <div class="p-4">
                     <div class="flex items-start">
                         <div class="ml-3 w-0 flex-1 pt-0.5">
