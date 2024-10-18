@@ -3,8 +3,9 @@
     import { postData } from "../../global/fetchData";
     import Header from "../../global/components/Header.svelte";
     import { isAdminAuthenticated } from "../../global/security";
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
     import { goto } from "$app/navigation";
+    import { browser } from "$app/environment";
     import NotificationTimer from "../../global/components/NotificationTimer.svelte";
     import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
 
@@ -140,11 +141,20 @@
     const selectedMetric = writable<keyof typeof metricLabelTranslations>(statisticsMetrics[0]);
     const selectedSinceOptions = writable<string[]>([]);
     const selectedPeriodOptions = writable<string[]>([]);
-    const userId = writable("");
-    const username = writable("");
-    const emailAddress = writable("");
+    let userId = "";
+    let username = "";
+    let emailAddress = "";
 
     const fetchStatistics = async () => {
+        if (!userId && !username && !emailAddress) {
+            displayPopup(
+                "error",
+                "Missing Identifier",
+                "Please provide at least one identifier (User ID, Username, or Email Address).",
+            );
+            return;
+        }
+
         const emailsStatsParam: Record<string, any> = {};
         const $selectedMetric = get(selectedMetric);
 
@@ -159,9 +169,9 @@
         });
 
         const result = await postData(`admin/search_user_info/`, {
-            id: get(userId),
-            username: get(username),
-            emailAddress: get(emailAddress),
+            id: userId,
+            username: username,
+            emailAddress: emailAddress,
             emailsStatsParam,
         });
 
@@ -177,15 +187,6 @@
     const handleFetch = () => {
         fetchStatistics();
     };
-
-    onMount(async () => {
-        const isAuthenticated = await isAdminAuthenticated();
-        if (!isAuthenticated) {
-            goto("/");
-        } else {
-            isLoading.set(false);
-        }
-    });
 
     const getTranslation = (key: string) => {
         return metricLabelTranslations[key as keyof typeof metricLabelTranslations] || key;
@@ -208,6 +209,43 @@
         const emailStats = $data?.emailsStats[key];
         return emailStats?.since[sinceKey as SinceKey] || 0;
     }
+
+    function handleKeydown(event: KeyboardEvent) {
+        const target = event.target as HTMLInputElement;
+        const userIdField = document.getElementById("user-id") as HTMLInputElement;
+        const usernameField = document.getElementById("username") as HTMLInputElement;
+        const emailField = document.getElementById("email-address") as HTMLInputElement;
+
+        if (event.key === "Tab") {
+            event.preventDefault();
+            if (target === userIdField) {
+                usernameField.focus();
+            } else if (target === usernameField) {
+                emailField.focus();
+            } else {
+                userIdField.focus();
+            }
+        } else if (event.key === "Enter") {
+            event.preventDefault();
+            handleFetch();
+        }
+    }
+
+    onMount(async () => {
+        const isAuthenticated = await isAdminAuthenticated();
+        if (!isAuthenticated) {
+            goto("/");
+        } else {
+            isLoading.set(false);
+            window.addEventListener("keydown", handleKeydown);
+        }
+    });
+
+    onDestroy(() => {
+        if (browser) {
+            document.removeEventListener("keydown", handleKeydown);
+        }
+    });
 </script>
 
 {#if $showNotification}
@@ -233,7 +271,7 @@
                 <input
                     id="user-id"
                     type="text"
-                    bind:value={$userId}
+                    bind:value={userId}
                     placeholder="Enter User ID"
                     class="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200"
                 />
@@ -245,7 +283,7 @@
                 <input
                     id="username"
                     type="text"
-                    bind:value={$username}
+                    bind:value={username}
                     placeholder="Enter Username"
                     class="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200"
                 />
@@ -257,7 +295,7 @@
                 <input
                     id="email-address"
                     type="email"
-                    bind:value={$emailAddress}
+                    bind:value={emailAddress}
                     placeholder="Enter Email Address"
                     class="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200"
                 />
@@ -411,7 +449,7 @@
                     {#if $data.plan.expiresThe}
                         <div>
                             <strong>Expires On:</strong>
-                            {$data.plan.expiresThe.toLocaleDateString()}
+                            {new Date($data.plan.expiresThe).toLocaleDateString()}
                         </div>
                     {/if}
                 </div>

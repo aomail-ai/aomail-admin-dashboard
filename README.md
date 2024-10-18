@@ -22,6 +22,6 @@ To launch the landing page in production, run the script:
 
 Stop the container aomail-admin-dashboard-container
 ```bash
-npm run install
+npm install
 npm run dev -- --host 0.0.0.0 --port 8085
 ```

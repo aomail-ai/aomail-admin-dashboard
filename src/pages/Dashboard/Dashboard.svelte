@@ -86,7 +86,7 @@
     };
 
     const fetchCostsInfo = async () => {
-        const result = await getData("admin/get_costs_info");
+        const result = await getData("admin/get_costs_info/");
 
         if (!result.success) {
             displayPopup("error", "Failed to fetch costs data", result.error as string);

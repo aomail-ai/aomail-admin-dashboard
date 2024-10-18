@@ -3,8 +3,9 @@
     import { putData } from "../../global/fetchData";
     import Header from "../../global/components/Header.svelte";
     import { isAdminAuthenticated } from "../../global/security";
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
     import { goto } from "$app/navigation";
+    import { browser } from "$app/environment";
     import NotificationTimer from "../../global/components/NotificationTimer.svelte";
     import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
 
@@ -46,10 +47,10 @@
     }
 
     const isLoading = writable(true);
-    const userId = writable("");
-    const username = writable("");
-    const emailAddress = writable("");
-    const selectedPlan = writable("");
+    let userId = "";
+    let username = "";
+    let emailAddress = "";
+    let selectedPlan = "";
 
     const plans = [
         {
@@ -72,11 +73,12 @@
             goto("/");
         } else {
             isLoading.set(false);
+            window.addEventListener("keydown", handleKeydown);
         }
     });
 
     async function handleUpdate() {
-        if (!$userId && !$username && !$emailAddress) {
+        if (!userId && !username && !emailAddress) {
             displayPopup(
                 "error",
                 "Missing Identifier",
@@ -85,11 +87,16 @@
             return;
         }
 
+        if (!selectedPlan) {
+            displayPopup("error", "Missing Plan", "Please select a plan to assign to the user.");
+            return;
+        }
+
         const requestBody = {
-            id: $userId || undefined,
-            username: $username || undefined,
-            emailAddress: $emailAddress || undefined,
-            plan: $selectedPlan,
+            id: userId,
+            username: username,
+            emailAddress: emailAddress,
+            plan: selectedPlan,
         };
 
         const result = await putData("admin/update_user_info/", requestBody);
@@ -100,6 +107,34 @@
             displayPopup("success", "Success", "User information updated successfully!");
         }
     }
+
+    function handleKeydown(event: KeyboardEvent) {
+        const target = event.target as HTMLInputElement;
+        const userIdField = document.getElementById("user-id") as HTMLInputElement;
+        const usernameField = document.getElementById("username") as HTMLInputElement;
+        const emailField = document.getElementById("email-address") as HTMLInputElement;
+
+        if (event.key === "Tab") {
+            event.preventDefault();
+
+            if (target === userIdField) {
+                usernameField.focus();
+            } else if (target === usernameField) {
+                emailField.focus();
+            } else {
+                userIdField.focus();
+            }
+        } else if (event.key === "Enter") {
+            event.preventDefault();
+            handleUpdate();
+        }
+    }
+
+    onDestroy(() => {
+        if (browser) {
+            document.removeEventListener("keydown", handleKeydown);
+        }
+    });
 </script>
 
 {#if $showNotification}
@@ -125,7 +160,7 @@
                 <input
                     id="user-id"
                     type="text"
-                    bind:value={$userId}
+                    bind:value={userId}
                     placeholder="Enter User ID"
                     class="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200"
                 />
@@ -137,7 +172,7 @@
                 <input
                     id="username"
                     type="text"
-                    bind:value={$username}
+                    bind:value={username}
                     placeholder="Enter Username"
                     class="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200"
                 />
@@ -149,7 +184,7 @@
                 <input
                     id="email-address"
                     type="email"
-                    bind:value={$emailAddress}
+                    bind:value={emailAddress}
                     placeholder="Enter Email Address"
                     class="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200"
                 />
@@ -163,7 +198,7 @@
             </label>
             <select
                 id="plan-select"
-                bind:value={$selectedPlan}
+                bind:value={selectedPlan}
                 class="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200"
             >
                 <option value="" disabled selected>Select a plan</option>

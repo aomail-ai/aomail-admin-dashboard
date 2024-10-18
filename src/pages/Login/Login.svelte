@@ -1,7 +1,8 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
+    import { browser } from "$app/environment";
     import { API_BASE_URL } from "../../global/const";
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
     import { isAdminAuthenticated } from "../../global/security";
     import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
     import NotificationTimer from "../../global/components/NotificationTimer.svelte";
@@ -49,17 +50,6 @@
         timerId = setTimeout(dismissPopup, 4000);
     }
 
-    onMount(async () => {
-        const token = localStorage.getItem("adminAccessToken");
-        if (token) {
-            const isAuthenticated = await isAdminAuthenticated();
-            if (isAuthenticated) {
-                tokenValid = true;
-            }
-        }
-        document.addEventListener("keydown", handleKeyDown);
-    });
-
     const togglePasswordVisibility = () => {
         showPassword = !showPassword;
     };
@@ -100,7 +90,7 @@
         goto("/dashboard");
     };
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKeydown = (event: KeyboardEvent) => {
         if (event.key === "Enter") {
             handleLogin();
         } else if (event.key === "Tab") {
@@ -117,6 +107,23 @@
             }
         }
     };
+
+    onMount(async () => {
+        const token = localStorage.getItem("adminAccessToken");
+        if (token) {
+            const isAuthenticated = await isAdminAuthenticated();
+            if (isAuthenticated) {
+                tokenValid = true;
+            }
+        }
+        document.addEventListener("keydown", handleKeydown);
+    });
+
+    onDestroy(() => {
+        if (browser) {
+            document.removeEventListener("keydown", handleKeydown);
+        }
+    });
 </script>
 
 {#if $showNotification}
