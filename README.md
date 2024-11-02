@@ -1,8 +1,4 @@
-# AoMail Landing Page
-
-## Website URL
-
-The live website can be accessed at: [admin.aomail.ai](https://admin.aomail.ai)
+# Aomail Admin Dashboard
 
 ## Tech Stack
 
