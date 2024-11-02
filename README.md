@@ -8,8 +8,6 @@
 
 ## Launch in Production
 
-To launch the landing page in production, run the script:
-
 ```bash
 ./build.sh
 ```
