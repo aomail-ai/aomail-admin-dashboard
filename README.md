@@ -1,8 +1,4 @@
-# AoMail Landing Page
-
-## Website URL
-
-The live website can be accessed at: [admin.aomail.ai](https://admin.aomail.ai)
+# Aomail Admin Dashboard
 
 ## Tech Stack
 
@@ -11,8 +7,6 @@ The live website can be accessed at: [admin.aomail.ai](https://admin.aomail.ai)
 - Web Server: Nginx
 
 ## Launch in Production
-
-To launch the landing page in production, run the script:
 
 ```bash
 ./build.sh
