@@ -8,6 +8,13 @@
     import { browser } from "$app/environment";
     import NotificationTimer from "../../global/components/NotificationTimer.svelte";
     import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
+    import UserEmailLinked from "./components/UserEmailLinked.svelte";
+    import type { EmailLinked } from "../../global/types";
+
+    interface SocialAPIs {
+        linked: EmailLinked[];
+        count: number;
+    }
 
     interface EmailStats {
         since: {
@@ -31,6 +38,7 @@
             [key: string]: EmailStats;
         };
         plan: {
+            creationDate: Date;
             name: string;
             isTrial: boolean;
             isActive: boolean;
@@ -43,6 +51,7 @@
             priceTokensOutput: number;
             total: number;
         };
+        socialAPIs: SocialAPIs;
     }
 
     const metricLabelTranslations = {
@@ -261,7 +270,7 @@
 {:else}
     <Header />
     <div class="p-6 space-y-6">
-        <h1 class="text-3xl font-semibold text-gray-800">User Statistics Dashboard</h1>
+        <h1 class="text-3xl font-semibold text-gray-800">Search User Info</h1>
 
         <!-- User Inputs Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -430,28 +439,49 @@
                 </div>
             </div>
 
-            <!-- Plan Information Display Section -->
-            <div class="mt-8 p-4 bg-gray-100 rounded-lg shadow-lg">
-                <h3 class="text-xl font-semibold mb-4">Plan Information</h3>
-                <div class="space-y-2">
-                    <div>
-                        <strong>Plan Name:</strong>
-                        {$data.plan.name}
+            <!-- Parent container to hold both Linked Emails and Plan Information sections -->
+            <div class="mt-8 p-4 bg-gray-100 rounded-lg shadow-lg flex space-x-4">
+                <!-- Linked Emails Display Section -->
+                {#if $data && $data.socialAPIs && $data.socialAPIs.linked.length > 0}
+                    <div class="w-1/2 p-4 bg-gray-50 rounded-lg shadow-inner">
+                        <h3 class="text-xl font-semibold mb-4">Linked Emails</h3>
+                        <ul>
+                            {#each $data.socialAPIs.linked as email}
+                                <li class="flex items-center mb-2">
+                                    <UserEmailLinked {email} />
+                                </li>
+                            {/each}
+                        </ul>
                     </div>
-                    <div>
-                        <strong>Trial Status:</strong>
-                        {$data.plan.isTrial ? "Yes" : "No"}
-                    </div>
-                    <div>
-                        <strong>Active Status:</strong>
-                        {$data.plan.isActive ? "Active" : "Inactive"}
-                    </div>
-                    {#if $data.plan.expiresThe}
+                {/if}
+
+                <!-- Plan Information Display Section -->
+                <div class="w-1/2 p-4 bg-gray-50 rounded-lg shadow-inner">
+                    <h3 class="text-xl font-semibold mb-4">Plan Information</h3>
+                    <div class="space-y-2">
                         <div>
-                            <strong>Expires On:</strong>
-                            {new Date($data.plan.expiresThe).toLocaleDateString()}
+                            <strong>Creation Date:</strong>
+                            {new Date($data.plan.creationDate).toLocaleDateString()}
                         </div>
-                    {/if}
+                        <div>
+                            <strong>Plan Name:</strong>
+                            {$data.plan.name}
+                        </div>
+                        <div>
+                            <strong>Trial Status:</strong>
+                            {$data.plan.isTrial ? "Yes" : "No"}
+                        </div>
+                        <div>
+                            <strong>Active Status:</strong>
+                            {$data.plan.isActive ? "Active" : "Inactive"}
+                        </div>
+                        {#if $data.plan.expiresThe}
+                            <div>
+                                <strong>Expires On:</strong>
+                                {new Date($data.plan.expiresThe).toLocaleDateString()}
+                            </div>
+                        {/if}
+                    </div>
                 </div>
             </div>
         {:else}

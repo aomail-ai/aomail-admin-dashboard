@@ -12,7 +12,11 @@
 
     interface DashboardData {
         emailCount: number;
-        socialApiCount: number;
+        socialApiCount: {
+            microsoft: number;
+            google: number;
+            total: number;
+        };
         userCount: number;
         adminCount: number;
     }
@@ -105,6 +109,38 @@
             isLoading.set(false);
         }
     });
+
+    function formatTokenCount(count: number): string {
+        if (isNaN(count) || count === null) {
+            return "N/A";
+        }
+
+        if (count >= 1_000_000_000) {
+            return `${(count / 1_000_000_000).toFixed(1)}B`;
+        } else if (count >= 1_000_000) {
+            return `${(count / 1_000_000).toFixed(1)}M`;
+        } else if (count >= 1_000) {
+            return count.toLocaleString();
+        } else {
+            return count.toString();
+        }
+    }
+
+    function formatCost(cost: number): string {
+        if (isNaN(cost) || cost === null) {
+            return "N/A";
+        }
+
+        if (cost >= 1_000_000_000) {
+            return `$${(cost / 1_000_000_000).toFixed(2)}B`;
+        } else if (cost >= 1_000_000) {
+            return `$${(cost / 1_000_000).toFixed(2)}M`;
+        } else if (cost >= 1_000) {
+            return `$${(cost / 1_000).toFixed(2)}K`;
+        } else {
+            return `$${cost.toFixed(2)}`;
+        }
+    }
 </script>
 
 {#if $showNotification}
@@ -138,17 +174,70 @@
                     </div>
                 </div>
 
-                <!-- Social API Count -->
+                <!-- Social API Count Section -->
                 <div class="bg-green-500 text-white p-6 rounded-lg shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <FontAwesomeIcon icon={faUsers} class="text-4xl" />
+                    <div class="flex flex-col space-y-4">
+                        <!-- Social APIs Linked -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <FontAwesomeIcon icon={faUsers} class="text-4xl" />
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xl font-semibold">Social APIs Linked</p>
+                                <p class="text-3xl font-bold">{$dashboardData.socialApiCount.total}</p>
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <p class="text-xl font-semibold">
-                                Social API{$dashboardData.socialApiCount > 1 ? "s" : ""} Linked
-                            </p>
-                            <p class="text-3xl font-bold">{$dashboardData.socialApiCount}</p>
+
+                        <!-- Microsoft API Count -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <!-- Microsoft Icon -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21">
+                                    <rect x="1" y="1" width="9" height="9" fill="#f25022" />
+                                    <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
+                                    <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
+                                    <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
+                                </svg>
+                                <p class="text-xl font-semibold">Microsoft</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold">{$dashboardData.socialApiCount.microsoft}</p>
+                            </div>
+                        </div>
+
+                        <!-- Google API Count -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <!-- Google Icon -->
+                                <svg
+                                    class="h-5 w-5"
+                                    aria-hidden="true"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        d="M23.4392061,12.2245191 C23.4392061,11.2412519 23.3594198,10.5237252 23.1867481,9.77963359 L11.9587786,9.77963359 L11.9587786,14.2176183 L18.5493435,14.2176183 C18.4165191,15.3205191 17.6989924,16.9814656 16.104458,18.0975573 L16.0821069,18.2461374 L19.6321832,20.9963359 L19.8781374,21.0208855 C22.1369771,18.9347176 23.4392061,15.8652824 23.4392061,12.2245191"
+                                        fill="#4285F4"
+                                    ></path>
+                                    <path
+                                        d="M11.9587786,23.9175573 C15.1876031,23.9175573 17.898229,22.8545038 19.8781374,21.0208855 L16.104458,18.0975573 C15.094626,18.8018015 13.7392672,19.2934351 11.9587786,19.2934351 C8.79636641,19.2934351 6.11230534,17.2073588 5.15551145,14.3239695 L5.01526718,14.3358779 L1.32384733,17.1927023 L1.27557252,17.3269008 C3.24210687,21.2334046 7.28152672,23.9175573 11.9587786,23.9175573"
+                                        fill="#34A853"
+                                    ></path>
+                                    <path
+                                        d="M5.15551145,14.3239695 C4.90305344,13.5798779 4.75694656,12.7825649 4.75694656,11.9587786 C4.75694656,11.1349008 4.90305344,10.3376794 5.14222901,9.59358779 L5.13554198,9.4351145 L1.3978626,6.53239695 L1.27557252,6.59056489 C0.465068702,8.21166412 0,10.0320916 0,11.9587786 C0,13.8854656 0.465068702,15.7058015 1.27557252,17.3269008 L5.15551145,14.3239695"
+                                        fill="#FBBC05"
+                                    ></path>
+                                    <path
+                                        d="M11.9587786,4.62403053 C14.2043359,4.62403053 15.719084,5.59401527 16.5828092,6.40461069 L19.9578321,3.10928244 C17.8850382,1.18259542 15.1876031,0 11.9587786,0 C7.28152672,0 3.24210687,2.68406107 1.27557252,6.59056489 L5.14222901,9.59358779 C6.11230534,6.71019847 8.79636641,4.62403053 11.9587786,4.62403053"
+                                        fill="#EB4335"
+                                    ></path>
+                                </svg>
+                                <p class="text-xl font-semibold">Google</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-bold">{$dashboardData.socialApiCount.google}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -192,7 +281,7 @@
                             </div>
                             <div class="text-right">
                                 <p class="text-xl font-semibold">Total Estimated Cost</p>
-                                <p class="text-3xl font-bold">$ {$costsData.totalEstimatedCost.toFixed(2)}</p>
+                                <p class="text-3xl font-bold">{formatCost($costsData.totalEstimatedCost)}</p>
                             </div>
                         </div>
                     </div>
@@ -205,7 +294,7 @@
                             </div>
                             <div class="text-right">
                                 <p class="text-xl font-semibold">Avg Cost Per User</p>
-                                <p class="text-3xl font-bold">$ {$costsData.averageTotalCostPerUser.toFixed(2)}</p>
+                                <p class="text-3xl font-bold">{formatCost($costsData.averageTotalCostPerUser)}</p>
                             </div>
                         </div>
                     </div>
@@ -218,7 +307,7 @@
                             </div>
                             <div class="text-right">
                                 <p class="text-xl font-semibold">Total Tokens Input</p>
-                                <p class="text-3xl font-bold">{$costsData.totalTokensInput}</p>
+                                <p class="text-3xl font-bold">{formatTokenCount($costsData.totalTokensInput)}</p>
                             </div>
                         </div>
                     </div>
@@ -231,7 +320,7 @@
                             </div>
                             <div class="text-right">
                                 <p class="text-xl font-semibold">Total Tokens Output</p>
-                                <p class="text-3xl font-bold">{$costsData.totalTokensOutput}</p>
+                                <p class="text-3xl font-bold">{formatTokenCount($costsData.totalTokensOutput)}</p>
                             </div>
                         </div>
                     </div>
