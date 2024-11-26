@@ -9,9 +9,15 @@
     import Header from "../../global/components/Header.svelte";
     import NotificationTimer from "../../global/components/NotificationTimer.svelte";
     import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
+    import { formatCost, formatTokenCount } from "../../global/formatters";
 
     interface DashboardData {
-        emailCount: number;
+        email: {
+            count: number;
+            avgPerUser: number;
+        };
+        avgRulesPerUser: number;
+        avgCreatedCategoriesPerUser: number;
         socialApiCount: {
             microsoft: number;
             google: number;
@@ -109,39 +115,10 @@
             isLoading.set(false);
         }
     });
-
-    function formatTokenCount(count: number): string {
-        if (isNaN(count) || count === null) {
-            return "N/A";
-        }
-
-        if (count >= 1_000_000_000) {
-            return `${(count / 1_000_000_000).toFixed(1)}B`;
-        } else if (count >= 1_000_000) {
-            return `${(count / 1_000_000).toFixed(1)}M`;
-        } else if (count >= 1_000) {
-            return count.toLocaleString();
-        } else {
-            return count.toString();
-        }
-    }
-
-    function formatCost(cost: number): string {
-        if (isNaN(cost) || cost === null) {
-            return "N/A";
-        }
-
-        if (cost >= 1_000_000_000) {
-            return `$${(cost / 1_000_000_000).toFixed(2)}B`;
-        } else if (cost >= 1_000_000) {
-            return `$${(cost / 1_000_000).toFixed(2)}M`;
-        } else if (cost >= 1_000) {
-            return `$${(cost / 1_000).toFixed(2)}K`;
-        } else {
-            return `$${cost.toFixed(2)}`;
-        }
-    }
 </script>
+
+<!-- User and Admin info must be in the same block I want to display average nb emails per user (data sent by the backend)
+with the email block I also want to display average NbRules and Avg NbCreatedCategories in the same block  -->
 
 {#if $showNotification}
     <NotificationTimer
@@ -156,20 +133,28 @@
 {:else}
     <Header />
     <div class="mt-6 px-6">
-        <h1 class="text-4xl font-bold text-gray-900 text-center mb-10">Admin Dashboard</h1>
+        <h1 class="text-3xl font-bold text-center mb-6">Admin Dashboard</h1>
 
         <!-- Statistics Cards -->
         {#if $dashboardData && $costsData}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Email Count -->
+                <!-- Email and Related Stats -->
                 <div class="bg-blue-500 text-white p-6 rounded-lg shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <FontAwesomeIcon icon={faEnvelope} class="text-4xl" />
+                    <div class="space-y-4">
+                        <!-- Email Count -->
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <FontAwesomeIcon icon={faEnvelope} class="text-4xl" />
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xl font-semibold">Email{$dashboardData.email.count > 1 ? "s" : ""}</p>
+                                <p class="text-3xl font-bold">{$dashboardData.email.count}</p>
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <p class="text-xl font-semibold">Email{$dashboardData.emailCount > 1 ? "s" : ""}</p>
-                            <p class="text-3xl font-bold">{$dashboardData.emailCount}</p>
+                        <!-- Average Emails Per User -->
+                        <div class="flex items-center justify-between">
+                            <p class="text-lg">Avg Emails/User</p>
+                            <p class="text-2xl font-semibold">{$dashboardData.email.avgPerUser.toFixed(2)}</p>
                         </div>
                     </div>
                 </div>
@@ -187,7 +172,6 @@
                                 <p class="text-3xl font-bold">{$dashboardData.socialApiCount.total}</p>
                             </div>
                         </div>
-
                         <!-- Microsoft API Count -->
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-2">
@@ -204,7 +188,6 @@
                                 <p class="text-3xl font-bold">{$dashboardData.socialApiCount.microsoft}</p>
                             </div>
                         </div>
-
                         <!-- Google API Count -->
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-2">
@@ -252,6 +235,16 @@
                             <p class="text-xl font-semibold">User{$dashboardData.userCount > 1 ? "s" : ""}</p>
                             <p class="text-3xl font-bold">{$dashboardData.userCount}</p>
                         </div>
+                    </div>
+                    <!-- Average Rules Per User -->
+                    <div class="flex items-center justify-between">
+                        <p class="text-lg">Avg Rules/User</p>
+                        <p class="text-2xl font-semibold">{$dashboardData.avgRulesPerUser.toFixed(2)}</p>
+                    </div>
+                    <!-- Average Created Categories Per User -->
+                    <div class="flex items-center justify-between">
+                        <p class="text-lg">Avg Created Categories/User</p>
+                        <p class="text-2xl font-semibold">{$dashboardData.avgCreatedCategoriesPerUser.toFixed(2)}</p>
                     </div>
                 </div>
 

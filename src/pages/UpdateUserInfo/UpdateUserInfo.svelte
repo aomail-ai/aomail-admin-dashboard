@@ -150,7 +150,7 @@
 {:else}
     <Header />
     <div class="p-6 space-y-6">
-        <h1 class="text-3xl font-semibold text-gray-800">Update User Subscription</h1>
+        <h1 class="text-3xl font-bold text-center mb-6">Update User Subscription</h1>
 
         <!-- User Inputs Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

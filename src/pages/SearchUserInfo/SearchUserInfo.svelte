@@ -10,6 +10,7 @@
     import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
     import UserEmailLinked from "./components/UserEmailLinked.svelte";
     import type { EmailLinked } from "../../global/types";
+    import { formatCost, formatTokenCount } from "../../global/formatters";
 
     interface SocialAPIs {
         linked: EmailLinked[];
@@ -44,6 +45,8 @@
             isActive: boolean;
             expiresThe: Date;
         };
+        nbRules: number;
+        nbCreatedCategories: number;
         nbTokensInput: number;
         nbTokensOutput: number;
         estimatedCostUser: {
@@ -270,7 +273,7 @@
 {:else}
     <Header />
     <div class="p-6 space-y-6">
-        <h1 class="text-3xl font-semibold text-gray-800">Search User Info</h1>
+        <h1 class="text-3xl font-bold text-center mb-6">Search User Info</h1>
 
         <!-- User Inputs Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -420,21 +423,60 @@
                 {/each}
             </ul>
 
-            <!-- Token Usage Display Section -->
-            <div class="mt-8 p-4 bg-gray-100 rounded-lg shadow-lg">
-                <h3 class="text-xl font-semibold mb-4">Token Usage</h3>
-                <div class="flex items-center space-x-4">
-                    <div class="flex items-center">
-                        <strong>Input Tokens:</strong>
-                        {$data.nbTokensInput}
+            <div
+                class="mt-8 p-4 bg-gray-100 rounded-lg shadow-lg flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6"
+            >
+                <!-- User Category and Rule Information Section -->
+                <div class="w-full md:w-1/2 p-6 bg-gray-50 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">User Category and Rule Information</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <div class="text-sm text-gray-600">
+                                <strong>Total Rules:</strong>
+                            </div>
+                            <div class="font-bold text-gray-900">
+                                {$data.nbRules}
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="text-sm text-gray-600">
+                                <strong>Total Created Categories:</strong>
+                            </div>
+                            <div class="font-bold text-gray-900">
+                                {$data.nbCreatedCategories}
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex items-center">
-                        <strong>Output Tokens:</strong>
-                        {$data.nbTokensOutput}
-                    </div>
-                    <div class="flex items-center">
-                        <strong>Total Cost:</strong>
-                        ${$data.estimatedCostUser.total.toFixed(2)}
+                </div>
+
+                <!-- Token Usage Display Section -->
+                <div class="w-full md:w-1/2 p-6 bg-gray-50 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">Token Usage</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <div class="text-sm text-gray-600">
+                                <strong>Input Tokens:</strong>
+                            </div>
+                            <div class="font-bold text-gray-900">
+                                {formatTokenCount($data.nbTokensInput)}
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="text-sm text-gray-600">
+                                <strong>Output Tokens:</strong>
+                            </div>
+                            <div class="font-bold text-gray-900">
+                                {formatTokenCount($data.nbTokensOutput)}
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="text-sm text-gray-600">
+                                <strong>Total Cost:</strong>
+                            </div>
+                            <div class="font-bold text-gray-900">
+                                {formatCost($data.estimatedCostUser.total)}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -443,7 +485,7 @@
             <div class="mt-8 p-4 bg-gray-100 rounded-lg shadow-lg flex space-x-4">
                 <!-- Linked Emails Display Section -->
                 {#if $data && $data.socialAPIs && $data.socialAPIs.linked.length > 0}
-                    <div class="w-1/2 p-4 bg-gray-50 rounded-lg shadow-inner">
+                    <div class="w-full md:w-1/2 p-6 bg-gray-50 rounded-lg shadow-lg">
                         <h3 class="text-xl font-semibold mb-4">Linked Emails</h3>
                         <ul>
                             {#each $data.socialAPIs.linked as email}
@@ -456,7 +498,7 @@
                 {/if}
 
                 <!-- Plan Information Display Section -->
-                <div class="w-1/2 p-4 bg-gray-50 rounded-lg shadow-inner">
+                <div class="w-full md:w-1/2 p-6 bg-gray-50 rounded-lg shadow-lg">
                     <h3 class="text-xl font-semibold mb-4">Plan Information</h3>
                     <div class="space-y-2">
                         <div>
