@@ -10,7 +10,7 @@
     import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
     import UserEmailLinked from "./components/UserEmailLinked.svelte";
     import type { EmailLinked } from "../../global/types";
-    import { formatCost, formatTokenCount } from "../../global/formatters";
+    import { formatFloat, formatInteger } from "../../global/formatters";
 
     interface SocialAPIs {
         linked: EmailLinked[];
@@ -392,7 +392,11 @@
                                         <ul class="pl-4">
                                             {#each Object.keys($data.emailsStats[key].since) as sinceKey}
                                                 {#if $selectedSinceOptions.includes(sinceKey)}
-                                                    <li>{getTranslation(sinceKey)}: {getSinceValue(key, sinceKey)}</li>
+                                                    <li>
+                                                        {getTranslation(sinceKey)}: {formatInteger(
+                                                            getSinceValue(key, sinceKey),
+                                                        )}
+                                                    </li>
                                                 {/if}
                                             {/each}
                                         </ul>
@@ -408,9 +412,21 @@
                                                 <li>
                                                     {getTranslation(periodKey)}:
                                                     <ul class="pl-4 list-disc">
-                                                        <li>Avg: {$data.emailsStats[key].periods[periodKey].avg}</li>
-                                                        <li>Min: {$data.emailsStats[key].periods[periodKey].min}</li>
-                                                        <li>Max: {$data.emailsStats[key].periods[periodKey].max}</li>
+                                                        <li>
+                                                            Avg: {formatFloat(
+                                                                $data.emailsStats[key].periods[periodKey].avg,
+                                                            )}
+                                                        </li>
+                                                        <li>
+                                                            Min: {formatInteger(
+                                                                $data.emailsStats[key].periods[periodKey].min,
+                                                            )}
+                                                        </li>
+                                                        <li>
+                                                            Max: {formatInteger(
+                                                                $data.emailsStats[key].periods[periodKey].max,
+                                                            )}
+                                                        </li>
                                                     </ul>
                                                 </li>
                                             {/if}
@@ -435,7 +451,7 @@
                                 <strong>Total Rules:</strong>
                             </div>
                             <div class="font-bold text-gray-900">
-                                {$data.nbRules}
+                                {formatInteger($data.nbRules)}
                             </div>
                         </div>
                         <div class="flex justify-between">
@@ -443,7 +459,7 @@
                                 <strong>Total Created Categories:</strong>
                             </div>
                             <div class="font-bold text-gray-900">
-                                {$data.nbCreatedCategories}
+                                {formatInteger($data.nbCreatedCategories)}
                             </div>
                         </div>
                     </div>
@@ -458,7 +474,7 @@
                                 <strong>Input Tokens:</strong>
                             </div>
                             <div class="font-bold text-gray-900">
-                                {formatTokenCount($data.nbTokensInput)}
+                                {formatInteger($data.nbTokensInput)}
                             </div>
                         </div>
                         <div class="flex justify-between">
@@ -466,7 +482,7 @@
                                 <strong>Output Tokens:</strong>
                             </div>
                             <div class="font-bold text-gray-900">
-                                {formatTokenCount($data.nbTokensOutput)}
+                                {formatInteger($data.nbTokensOutput)}
                             </div>
                         </div>
                         <div class="flex justify-between">
@@ -474,7 +490,7 @@
                                 <strong>Total Cost:</strong>
                             </div>
                             <div class="font-bold text-gray-900">
-                                {formatCost($data.estimatedCostUser.total)}
+                                {formatFloat($data.estimatedCostUser.total, "$")}
                             </div>
                         </div>
                     </div>
@@ -527,7 +543,7 @@
                 </div>
             </div>
         {:else}
-            <p>No data available.</p>
+            <p>No data available</p>
         {/if}
     </div>
 {/if}

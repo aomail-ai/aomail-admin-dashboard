@@ -9,7 +9,7 @@
     import Header from "../../global/components/Header.svelte";
     import NotificationTimer from "../../global/components/NotificationTimer.svelte";
     import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
-    import { formatCost, formatTokenCount } from "../../global/formatters";
+    import { formatFloat, formatInteger } from "../../global/formatters";
 
     interface DashboardData {
         email: {
@@ -117,9 +117,6 @@
     });
 </script>
 
-<!-- User and Admin info must be in the same block I want to display average nb emails per user (data sent by the backend)
-with the email block I also want to display average NbRules and Avg NbCreatedCategories in the same block  -->
-
 {#if $showNotification}
     <NotificationTimer
         showNotification={$showNotification}
@@ -148,13 +145,13 @@ with the email block I also want to display average NbRules and Avg NbCreatedCat
                             </div>
                             <div class="text-right">
                                 <p class="text-xl font-semibold">Email{$dashboardData.email.count > 1 ? "s" : ""}</p>
-                                <p class="text-3xl font-bold">{$dashboardData.email.count}</p>
+                                <p class="text-3xl font-bold">{formatInteger($dashboardData.email.count)}</p>
                             </div>
                         </div>
                         <!-- Average Emails Per User -->
                         <div class="flex items-center justify-between">
                             <p class="text-lg">Avg Emails/User</p>
-                            <p class="text-2xl font-semibold">{$dashboardData.email.avgPerUser.toFixed(2)}</p>
+                            <p class="text-2xl font-semibold">{formatFloat($dashboardData.email.avgPerUser)}</p>
                         </div>
                     </div>
                 </div>
@@ -169,7 +166,7 @@ with the email block I also want to display average NbRules and Avg NbCreatedCat
                             </div>
                             <div class="text-right">
                                 <p class="text-xl font-semibold">Social APIs Linked</p>
-                                <p class="text-3xl font-bold">{$dashboardData.socialApiCount.total}</p>
+                                <p class="text-3xl font-bold">{formatInteger($dashboardData.socialApiCount.total)}</p>
                             </div>
                         </div>
                         <!-- Microsoft API Count -->
@@ -185,7 +182,9 @@ with the email block I also want to display average NbRules and Avg NbCreatedCat
                                 <p class="text-xl font-semibold">Microsoft</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-3xl font-bold">{$dashboardData.socialApiCount.microsoft}</p>
+                                <p class="text-3xl font-bold">
+                                    {formatInteger($dashboardData.socialApiCount.microsoft)}
+                                </p>
                             </div>
                         </div>
                         <!-- Google API Count -->
@@ -219,7 +218,7 @@ with the email block I also want to display average NbRules and Avg NbCreatedCat
                                 <p class="text-xl font-semibold">Google</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-3xl font-bold">{$dashboardData.socialApiCount.google}</p>
+                                <p class="text-3xl font-bold">{formatInteger($dashboardData.socialApiCount.google)}</p>
                             </div>
                         </div>
                     </div>
@@ -233,18 +232,18 @@ with the email block I also want to display average NbRules and Avg NbCreatedCat
                         </div>
                         <div class="text-right">
                             <p class="text-xl font-semibold">User{$dashboardData.userCount > 1 ? "s" : ""}</p>
-                            <p class="text-3xl font-bold">{$dashboardData.userCount}</p>
+                            <p class="text-3xl font-bold">{formatInteger($dashboardData.userCount)}</p>
                         </div>
                     </div>
                     <!-- Average Rules Per User -->
                     <div class="flex items-center justify-between">
                         <p class="text-lg">Avg Rules/User</p>
-                        <p class="text-2xl font-semibold">{$dashboardData.avgRulesPerUser.toFixed(2)}</p>
+                        <p class="text-2xl font-semibold">{formatFloat($dashboardData.avgRulesPerUser)}</p>
                     </div>
                     <!-- Average Created Categories Per User -->
                     <div class="flex items-center justify-between">
                         <p class="text-lg">Avg Created Categories/User</p>
-                        <p class="text-2xl font-semibold">{$dashboardData.avgCreatedCategoriesPerUser.toFixed(2)}</p>
+                        <p class="text-2xl font-semibold">{formatFloat($dashboardData.avgCreatedCategoriesPerUser)}</p>
                     </div>
                 </div>
 
@@ -256,7 +255,7 @@ with the email block I also want to display average NbRules and Avg NbCreatedCat
                         </div>
                         <div class="text-right">
                             <p class="text-xl font-semibold">Admin{$dashboardData.adminCount > 1 ? "s" : ""}</p>
-                            <p class="text-3xl font-bold">{$dashboardData.adminCount}</p>
+                            <p class="text-3xl font-bold">{formatInteger($dashboardData.adminCount)}</p>
                         </div>
                     </div>
                 </div>
@@ -274,7 +273,7 @@ with the email block I also want to display average NbRules and Avg NbCreatedCat
                             </div>
                             <div class="text-right">
                                 <p class="text-xl font-semibold">Total Estimated Cost</p>
-                                <p class="text-3xl font-bold">{formatCost($costsData.totalEstimatedCost)}</p>
+                                <p class="text-3xl font-bold">{formatFloat($costsData.totalEstimatedCost, "$")}</p>
                             </div>
                         </div>
                     </div>
@@ -287,7 +286,7 @@ with the email block I also want to display average NbRules and Avg NbCreatedCat
                             </div>
                             <div class="text-right">
                                 <p class="text-xl font-semibold">Avg Cost Per User</p>
-                                <p class="text-3xl font-bold">{formatCost($costsData.averageTotalCostPerUser)}</p>
+                                <p class="text-3xl font-bold">{formatFloat($costsData.averageTotalCostPerUser, "$")}</p>
                             </div>
                         </div>
                     </div>
@@ -300,7 +299,7 @@ with the email block I also want to display average NbRules and Avg NbCreatedCat
                             </div>
                             <div class="text-right">
                                 <p class="text-xl font-semibold">Total Tokens Input</p>
-                                <p class="text-3xl font-bold">{formatTokenCount($costsData.totalTokensInput)}</p>
+                                <p class="text-3xl font-bold">{formatInteger($costsData.totalTokensInput)}</p>
                             </div>
                         </div>
                     </div>
@@ -313,14 +312,14 @@ with the email block I also want to display average NbRules and Avg NbCreatedCat
                             </div>
                             <div class="text-right">
                                 <p class="text-xl font-semibold">Total Tokens Output</p>
-                                <p class="text-3xl font-bold">{formatTokenCount($costsData.totalTokensOutput)}</p>
+                                <p class="text-3xl font-bold">{formatInteger($costsData.totalTokensOutput)}</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         {:else}
-            <div class="text-center text-gray-600 mt-10">Fetching data...</div>
+            <div class="text-center text-gray-600 mt-10">No data available</div>
         {/if}
     </div>
 {/if}
