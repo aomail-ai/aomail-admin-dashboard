@@ -9,6 +9,7 @@
     import NotificationTimer from "../../global/components/NotificationTimer.svelte";
     import { displayErrorPopup, displaySuccessPopup } from "../../global/popUp";
 
+    const blockUser = writable(false);
     const showNotification = writable(false);
     const notificationTitle = writable("");
     const notificationMessage = writable("");
@@ -87,16 +88,12 @@
             return;
         }
 
-        if (!selectedPlan) {
-            displayPopup("error", "Missing Plan", "Please select a plan to assign to the user.");
-            return;
-        }
-
         const requestBody = {
             id: userId,
             username: username,
             emailAddress: emailAddress,
             plan: selectedPlan,
+            blockUser: $blockUser,
         };
 
         const result = await putData("admin/update_user_info/", requestBody);
@@ -150,7 +147,7 @@
 {:else}
     <Header />
     <div class="p-6 space-y-6">
-        <h1 class="text-3xl font-bold text-center mb-6">Update User Subscription</h1>
+        <h1 class="text-3xl font-bold text-center mb-6">Update User Information</h1>
 
         <!-- User Inputs Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -191,26 +188,49 @@
             </div>
         </div>
 
-        <!-- Subscription Plan Selection -->
-        <div>
-            <label for="plan-select" class="block text-sm font-medium text-gray-700 mb-2">
-                Select Subscription Plan
-            </label>
-            <select
-                id="plan-select"
-                bind:value={selectedPlan}
-                class="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200"
-            >
-                <option value="" disabled selected>Select a plan</option>
-                {#each plans as { name, plan }}
-                    <option value={plan}>{name}</option>
-                {/each}
-            </select>
+        <!-- Subscription Plan and Block User Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Select Subscription Plan -->
+            <div>
+                <label for="plan-select" class="block text-sm font-medium text-gray-700 mb-2">
+                    Select Subscription Plan
+                </label>
+                <select
+                    id="plan-select"
+                    bind:value={selectedPlan}
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200"
+                >
+                    <option value="" disabled selected>Select a plan</option>
+                    {#each plans as { name, plan }}
+                        <option value={plan}>{name}</option>
+                    {/each}
+                </select>
+            </div>
+
+            <!-- Block User Toggle with Message -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <label for="block-user" class="block text-sm font-medium text-gray-700 mr-4">Block User</label>
+                    <input
+                        id="block-user"
+                        type="checkbox"
+                        bind:checked={$blockUser}
+                        class="text-blue-600 focus:ring focus:ring-blue-200"
+                    />
+                </div>
+
+                <!-- Block/Unblock Message -->
+                {#if $blockUser}
+                    <span class="text-red-600">The user will be blocked</span>
+                {:else}
+                    <span class="text-green-600">The user will be unblocked</span>
+                {/if}
+            </div>
         </div>
 
         <!-- Button to Update Subscription -->
         <button class="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mt-4" on:click={handleUpdate}>
-            Update Subscription
+            Update
         </button>
     </div>
 {/if}

@@ -39,6 +39,7 @@
             [key: string]: EmailStats;
         };
         plan: {
+            isBlock: boolean;
             creationDate: Date;
             name: string;
             isTrial: boolean;
@@ -537,6 +538,11 @@
                             <div>
                                 <strong>Expires On:</strong>
                                 {new Date($data.plan.expiresThe).toLocaleDateString()}
+                            </div>
+                        {/if}
+                        {#if $data.plan.isBlock}
+                            <div>
+                                <strong class="text-red-500">User is blocked</strong>
                             </div>
                         {/if}
                     </div>
