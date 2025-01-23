@@ -14,4 +14,4 @@ RUN npm run build
 
 COPY static/ /dashboard/dist/static/
 
-CMD ["npm", "run", "preview", "--", "--port", "8085", "--host"]
+CMD ["npm", "run", "preview", "--", "--host"]
