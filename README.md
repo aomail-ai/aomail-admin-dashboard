@@ -1,8 +1,6 @@
-# Aomail Admin Dashboard
-A dashboard to manage users and their subscriptions plans and get overview of the platform.
+# 📊 Aomail Admin Dashboard
 
-
-> A dashboard to manage users and their subscriptions plans and get overview of the platform.
+> An administrative dashboard for managing Aomail users, subscriptions, and platform analytics. Visit [aomail.ai](https://aomail.ai) to learn more about the platform.
 >
 > 📧 Support: aomailaipro@gmail.com
   
@@ -15,14 +13,14 @@ A dashboard to manage users and their subscriptions plans and get overview of th
 </div>
 
 ## ✨ Features
-TODO
 
+- **👥 User Management**: Search, update plans, and manage user access
+- **📊 Platform Analytics**: Monitor usage, costs, and growth metrics
+- **👮 Admin Controls**: Manage admin accounts and access levels
 
 ## 🛠 Self-Hosting Guide
 
 ⚠️ **Compatibility Note**: Tested on WSL 2, Docker Desktop, and Debian servers. Other platforms may work but are untested.
-
-
 
 ### Quick Start
 
@@ -31,34 +29,35 @@ TODO
 git clone https://github.com/aomail-ai/aomail-admin-dashboard
 cd aomail-admin-dashboard
 npm install
-npm run dev -- --host 0.0.0.0 --port 8085
+npm run dev
 ```
-Create a superuser to access the dashboard
+
+2. **Create Admin User:**
 ```bash
 docker exec -it aomail_project-backend_dev-1 python manage.py createsuperuser
 ```
 
-Access at [http://localhost:8085/](http://localhost:8085/)
+Access the dashboard at [http://localhost:8085/](http://localhost:8085/)
 
+## 🚀 Production Deployment
 
+1. Update environment configuration if needed:
+```bash
+VITE_BACKEND_SUBDOMAIN_ENV=your-subdomain
+```
 
-
-
-
-
-
-## Launch in Production
-
+2. Build and deploy:
 ```bash
 ./build.sh
 ```
 
-## Run in development
+## 🔧 Frequently Asked Questions
 
-Stop the container aomail-admin-dashboard-container
-```bash
-npm install
-npm run dev
-```
+### How do I grant unlimited access to a user?
+1. Navigate to "Update User Info"
+2. Search for the target user
+3. Update their plan to "Premium"
+4. Save changes
 
- 
+### How do I manage multiple email links?
+The Premium plan automatically enables multiple email account linking. Grant Premium access through the user management interface.
