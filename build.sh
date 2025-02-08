@@ -9,7 +9,7 @@ docker stop aomail-admin-dashboard-container || true
 docker rm aomail-admin-dashboard-container || true
 
 docker run -d \
-    -p $FRONTEND_PORT:$FRONTEND_PORT \
+    -p $FRONTEND_PORT:4173 \
     --env VITE_BACKEND_SUBDOMAIN_ENV=$VITE_BACKEND_SUBDOMAIN_ENV \
     --name aomail-admin-dashboard-container \
     aomail-admin-dashboard
