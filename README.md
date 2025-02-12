@@ -1,6 +1,6 @@
 # 📊 Aomail Admin Dashboard
 
-> An administrative dashboard for managing Aomail users, subscriptions, and platform analytics. Visit [aomail.ai](https://aomail.ai) to learn more about the platform.
+> An administrative dashboard for managing Aomail users, subscriptions, and platform analytics. Used for  your [Aomail deployment](https://github.com/aomail-ai/aomail-app).
 >
 > 📧 Support: aomailaipro@gmail.com
   

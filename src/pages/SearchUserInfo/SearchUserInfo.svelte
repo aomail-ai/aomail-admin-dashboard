@@ -11,6 +11,7 @@
     import UserEmailLinked from "./components/UserEmailLinked.svelte";
     import type { EmailLinked } from "../../global/types";
     import { formatFloat, formatInteger } from "../../global/formatters";
+    import { Chart, registerables } from "chart.js";
 
     interface SocialAPIs {
         linked: EmailLinked[];
@@ -158,6 +159,9 @@
     let username = "";
     let emailAddress = "";
 
+    let sinceChart: Chart | null = null;
+    let periodsChart: Chart | null = null;
+
     const fetchStatistics = async () => {
         if (!userId && !username && !emailAddress) {
             displayPopup(
@@ -245,6 +249,7 @@
     }
 
     onMount(async () => {
+        Chart.register(...registerables);
         const isAuthenticated = await isAdminAuthenticated();
         if (!isAuthenticated) {
             goto("/");
@@ -258,7 +263,116 @@
         if (browser) {
             document.removeEventListener("keydown", handleKeydown);
         }
+        if (sinceChart) {
+            sinceChart.destroy();
+        }
+        if (periodsChart) {
+            periodsChart.destroy();
+        }
     });
+
+    $: if ($data) {
+        setTimeout(() => {
+            renderSinceBarChart();
+            renderPeriodsErrorBarChart();
+        }, 0);
+    }
+
+    function renderSinceBarChart() {
+        const ctx = document.getElementById("sinceBarChart") as HTMLCanvasElement;
+        if (!ctx) return;
+
+        if (sinceChart) {
+            sinceChart.destroy();
+        }
+
+        const metric = $selectedMetric;
+        const metricData = $data?.emailsStats[metric];
+
+        if (!metricData) return;
+
+        sinceChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: $selectedSinceOptions.map(
+                    (option) => metricLabelTranslations[option as keyof typeof metricLabelTranslations] || option,
+                ),
+                datasets: [
+                    {
+                        label: metricLabelTranslations[metric],
+                        data: $selectedSinceOptions.map((option) => getSinceValue(metric, option)),
+                        backgroundColor: "rgba(54, 162, 235, 0.2)",
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        borderWidth: 1,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+    }
+
+    function renderPeriodsErrorBarChart() {
+        const ctx = document.getElementById("periodsErrorBarChart") as HTMLCanvasElement;
+        if (!ctx) return;
+
+        if (periodsChart) {
+            periodsChart.destroy();
+        }
+
+        const metric = $selectedMetric;
+        const metricData = $data?.emailsStats[metric];
+
+        if (!metricData?.periods) return;
+
+        periodsChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: $selectedPeriodOptions.map(
+                    (option) => metricLabelTranslations[option as keyof typeof metricLabelTranslations] || option,
+                ),
+                datasets: [
+                    {
+                        label: "Average",
+                        data: $selectedPeriodOptions.map((period) => metricData.periods[period]?.avg || 0),
+                        backgroundColor: "rgba(54, 162, 235, 0.2)",
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        borderWidth: 1,
+                    },
+                    {
+                        label: "Minimum",
+                        data: $selectedPeriodOptions.map((period) => metricData.periods[period]?.min || 0),
+                        backgroundColor: "rgba(75, 192, 192, 0.2)",
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        borderWidth: 1,
+                    },
+                    {
+                        label: "Maximum",
+                        data: $selectedPeriodOptions.map((period) => metricData.periods[period]?.max || 0),
+                        backgroundColor: "rgba(255, 99, 132, 0.2)",
+                        borderColor: "rgba(255, 99, 132, 1)",
+                        borderWidth: 1,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+    }
 </script>
 
 {#if $showNotification}
@@ -380,65 +494,31 @@
         <h2 class="text-xl font-semibold">Statistics</h2>
 
         {#if $data}
-            <ul>
-                {#each Object.keys($data.emailsStats) as key}
-                    {#if Object.keys($data.emailsStats[key].since).length > 0 || Object.keys($data.emailsStats[key].periods).length > 0}
-                        <li>
-                            <strong>{getTranslation(key)}:</strong>
-                            <ul class="pl-4 list-disc">
-                                <!-- Since Section -->
-                                {#if $selectedSinceOptions.length > 0}
-                                    {#if Object.keys($data.emailsStats[key].since).length > 0}
-                                        <li>Since:</li>
-                                        <ul class="pl-4">
-                                            {#each Object.keys($data.emailsStats[key].since) as sinceKey}
-                                                {#if $selectedSinceOptions.includes(sinceKey)}
-                                                    <li>
-                                                        {getTranslation(sinceKey)}: {formatInteger(
-                                                            getSinceValue(key, sinceKey),
-                                                        )}
-                                                    </li>
-                                                {/if}
-                                            {/each}
-                                        </ul>
-                                    {/if}
-                                {/if}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
+                {#if Object.keys($data.emailsStats[$selectedMetric].since).length > 0}
+                    <div class="p-4 bg-white rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2 flex items-center">
+                            <i class="fas fa-chart-bar text-green-500 mr-2"></i>
+                            Since Statistics
+                        </h3>
+                        <div class="h-[400px]">
+                            <canvas id="sinceBarChart"></canvas>
+                        </div>
+                    </div>
+                {/if}
 
-                                <!-- Periods Section -->
-                                {#if $selectedPeriodOptions.length > 0}
-                                    <li>Periods:</li>
-                                    <ul class="pl-4">
-                                        {#each Object.keys($data.emailsStats[key].periods) as periodKey}
-                                            {#if $selectedPeriodOptions.includes(periodKey)}
-                                                <li>
-                                                    {getTranslation(periodKey)}:
-                                                    <ul class="pl-4 list-disc">
-                                                        <li>
-                                                            Avg: {formatFloat(
-                                                                $data.emailsStats[key].periods[periodKey].avg,
-                                                            )}
-                                                        </li>
-                                                        <li>
-                                                            Min: {formatInteger(
-                                                                $data.emailsStats[key].periods[periodKey].min,
-                                                            )}
-                                                        </li>
-                                                        <li>
-                                                            Max: {formatInteger(
-                                                                $data.emailsStats[key].periods[periodKey].max,
-                                                            )}
-                                                        </li>
-                                                    </ul>
-                                                </li>
-                                            {/if}
-                                        {/each}
-                                    </ul>
-                                {/if}
-                            </ul>
-                        </li>
-                    {/if}
-                {/each}
-            </ul>
+                {#if Object.keys($data.emailsStats[$selectedMetric].periods).length > 0}
+                    <div class="p-4 bg-white rounded-lg shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2 flex items-center">
+                            <i class="fas fa-chart-line text-green-500 mr-2"></i>
+                            Period Statistics
+                        </h3>
+                        <div class="h-[400px]">
+                            <canvas id="periodsErrorBarChart"></canvas>
+                        </div>
+                    </div>
+                {/if}
+            </div>
 
             <div
                 class="mt-8 p-4 bg-gray-100 rounded-lg shadow-lg flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6"

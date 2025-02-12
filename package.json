@@ -37,7 +37,9 @@
 		"@fortawesome/vue-fontawesome": "^3.0.8",
 		"@sveltejs/adapter-static": "^3.0.5",
 		"autoprefixer": "^10.4.20",
+		"chart.js": "^4.4.7",
 		"postcss": "^8.4.47",
+		"svelte-chartjs": "^3.1.5",
 		"tailwindcss": "^3.4.13"
 	}
 }
