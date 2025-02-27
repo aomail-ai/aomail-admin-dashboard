@@ -8,7 +8,6 @@
 <div align="center">
 
 [![Discord](https://discord.com/api/guilds/1303091825900257341/widget.png?style=shield)](https://discord.com/invite/JxbPZNDd)
-[![License](https://github.com/aomail-ai/aomail-admin-dashboard/tree/main?tab=AGPL-3.0-1-ov-file)](LICENSE)
 
 </div>
 
