@@ -12,6 +12,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: "18.x"
+          token: ${{ secrets.GITHUB_TOKEN }}
       - run: npm install
       - run: npm run format
       - name: Commit changes
