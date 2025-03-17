@@ -7,7 +7,7 @@
 
 <div align="center">
 
-[![Discord](https://discord.com/api/guilds/1303091825900257341/widget.png?style=shield)](https://discord.com/invite/JxbPZNDd)
+[![Discord](https://discord.com/api/guilds/1303091825900257341/widget.png?style=shield)](https://discord.com/invite/XHTcEDbvh9)
 
 </div>
 
